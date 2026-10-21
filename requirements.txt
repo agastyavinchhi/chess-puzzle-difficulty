@@ -1,0 +1,9 @@
+pandas
+pyarrow
+zstandard
+python-chess
+lightgbm>=4.7
+scikit-learn
+shap
+streamlit>=1.50
+plotly
