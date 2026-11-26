@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    image: chess-puzzle-difficulty
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+
+  # One-off pipeline runs:
+  #   docker compose --profile pipeline run --rm prepare
+  #   docker compose --profile pipeline run --rm train
+  prepare:
+    build: .
+    image: chess-puzzle-difficulty
+    profiles: [pipeline]
+    command: python prepare.py
+    volumes:
+      - ./data:/app/data
+
+  train:
+    build: .
+    image: chess-puzzle-difficulty
+    profiles: [pipeline]
+    command: python train.py
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts

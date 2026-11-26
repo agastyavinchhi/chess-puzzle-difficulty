@@ -40,15 +40,41 @@ LightGBM was tuned with a 12-configuration grid search over `num_leaves`, `learn
 
 ## Run it
 
+The project is packaged with Docker so it runs the same everywhere: one image (Python 3.12) holds every dependency, and `data/` and `artifacts/` are mounted from your machine so downloads and trained models persist between runs.
+
+### With Docker (recommended)
+
+Requires [Docker](https://docs.docker.com/get-docker/) with Compose.
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:8501. On first launch the app runs `prepare.py` and `train.py` to download the data (~300 MB) and build the model, which takes a while; later launches reuse what's in `data/` and `artifacts/`.
+
+To run the pipeline steps on their own:
+
+```bash
+docker compose --profile pipeline run --rm prepare   # data/features.parquet
+docker compose --profile pipeline run --rm train     # artifacts/
+```
+
+Stop the app with `Ctrl+C`, or `docker compose down` if it runs in the background (`up -d`).
+
+### Without Docker
+
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/streamlit run app.py
 ```
 
-On first launch the app runs `prepare.py` and `train.py` to download the data and build the model. The dashboard shows the metrics, predicted vs. actual ratings, error by rating band, feature importance, and a puzzle explorer.
+The dashboard shows the metrics, predicted vs. actual ratings, error by rating band, feature importance, and a puzzle explorer.
 
 | File | Purpose |
 |---|---|
 | `prepare.py` | Download, sample, clean, and compute features → `data/features.parquet` |
 | `train.py` | Train the models and save metrics, predictions, SHAP importance and the model → `artifacts/` |
 | `app.py` | Streamlit dashboard |
+| `Dockerfile` | Image with Python 3.12 and all dependencies; starts the dashboard |
+| `docker-compose.yml` | Runs the dashboard on port 8501, plus `prepare` and `train` as one-off jobs |
+| `.dockerignore` | Keeps the virtualenv, git history, data and artifacts out of the image |
